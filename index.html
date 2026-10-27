@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; manifest-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>PDF Sign — Sign a PDF Online Without Uploading, Free &amp; Private | S3eidat Tools</title>
+<meta name="description" content="Draw, type or upload your signature, place it on any PDF page with initials, dates and text, and download the signed PDF. Runs in your browser, nothing uploaded.">
+<meta property="og:title" content="PDF Sign — sign PDFs without uploading them">
+<meta property="og:description" content="Draw, type or upload a signature and place it on your PDF. Runs 100% in your browser.">
+<link rel="icon" href="kit/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="kit/kit.css">
+<link rel="stylesheet" href="app.css">
+<script src="kit/kit.js"></script>
+<script src="lib/pdf-lib.min.js"></script>
+<!--s3:seo-->
+<link rel="canonical" href="https://s3eidat.github.io/pdf-sign/">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d0f12">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="S3eidat Tools">
+<meta property="og:url" content="https://s3eidat.github.io/pdf-sign/">
+<meta property="og:image" content="https://s3eidat.github.io/pdf-sign/screenshot.png">
+<meta property="og:image:width" content="1280"><meta property="og:image:height" content="800">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PDF Sign — Sign PDFs without uploading them">
+<meta name="twitter:description" content="Sign PDFs without uploading them. Free, private and runs 100% in your browser: no sign-up, no uploads.">
+<meta name="twitter:image" content="https://s3eidat.github.io/pdf-sign/screenshot.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "PDF Sign", "url": "https://s3eidat.github.io/pdf-sign/", "description": "Sign PDFs without uploading them. Free, private and runs 100% in your browser: no sign-up, no uploads.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "image": "https://s3eidat.github.io/pdf-sign/screenshot.png", "author": {"@type": "Person", "name": "s3eidat", "url": "https://github.com/s3eidat"}}</script>
+<!--/s3:seo-->
+</head>
+<body data-tool="pdf-sign">
+<main class="s3-main">
+  <section class="s3-hero">
+    <h1>PDF Sign</h1>
+    <p>Draw, type or upload your signature, drop it on the page with initials, a date or a note, and download the signed PDF. The file never leaves this device.</p>
+  </section>
+
+  <section class="card" id="dropCard">
+    <label class="drop" id="drop">
+      <input type="file" accept=".pdf,application/pdf" hidden>
+      <svg class="i"><use href="#i-upload"/></svg>
+      <b>Drop a PDF here</b>
+      <span>or click to choose one</span>
+    </label>
+  </section>
+
+  <div class="sg-layout" id="work" hidden>
+    <section class="sg-pages card" id="pages" aria-label="Pages"></section>
+
+    <aside class="sg-side">
+      <section class="card">
+        <div class="row between sg-file">
+          <div class="row sg-fname"><svg class="i"><use href="#i-file"/></svg><b id="fname"></b></div>
+          <button class="btn ghost small" id="change"><svg class="i"><use href="#i-refresh"/></svg>Another</button>
+        </div>
+        <span class="faint" id="fmeta"></span>
+
+        <div class="row between mt">
+          <h2>Create</h2>
+          <div class="seg" id="slot" role="group" aria-label="Which mark to create">
+            <button aria-pressed="true" data-v="sig">Signature</button>
+            <button aria-pressed="false" data-v="ini">Initials</button>
+          </div>
+        </div>
+        <div class="seg sg-modes mt" id="mode" role="group" aria-label="How to create it">
+          <button aria-pressed="true" data-v="draw">Draw</button>
+          <button aria-pressed="false" data-v="type">Type</button>
+          <button aria-pressed="false" data-v="upload">Upload</button>
+        </div>
+
+        <div class="sg-panel mt" id="pDraw">
+          <div class="sg-pad" id="padWrap"><span class="sg-pad-line" aria-hidden="true"></span><span class="sg-pad-hint" id="padHint">Sign here with your mouse, finger or pen</span><canvas id="pad" aria-label="Signature drawing area"></canvas></div>
+          <div class="row mt">
+            <button class="btn small" id="padUndo">↶ Undo</button>
+            <button class="btn small" id="padClear"><svg class="i"><use href="#i-trash"/></svg>Clear</button>
+          </div>
+        </div>
+
+        <div class="sg-panel mt" id="pType" hidden>
+          <label class="field">Your name<input class="input" id="typed" dir="auto" spellcheck="false" autocomplete="name" placeholder="e.g. Sara Haddad"></label>
+          <div class="sg-fonts mt" id="fonts" role="group" aria-label="Handwriting style"></div>
+        </div>
+
+        <div class="sg-panel mt" id="pUpload" hidden>
+          <label class="drop sg-updrop" id="upDrop">
+            <input type="file" accept="image/*" hidden>
+            <b>Choose a photo or scan of your signature</b>
+            <span>PNG, JPG… a white background is removed for you</span>
+          </label>
+          <label class="field mt">Background removal <span class="faint" id="thrVal"></span><input type="range" id="thr" min="120" max="250" value="210"></label>
+        </div>
+
+        <div class="row mt sg-inkrow">
+          <span class="faint">Ink</span>
+          <div class="row sg-inks" id="inks" role="group" aria-label="Ink colour">
+            <button class="sg-ink" data-c="#111111" aria-label="Black" aria-pressed="true"></button>
+            <button class="sg-ink" data-c="#1a3fb0" aria-label="Blue" aria-pressed="false"></button>
+            <button class="sg-ink" data-c="#8f1d1d" aria-label="Dark red" aria-pressed="false"></button>
+          </div>
+          <span class="grow"></span>
+          <div class="sg-preview" id="preview" aria-label="Current mark"></div>
+        </div>
+        <label class="check mt"><input type="checkbox" id="remember"> Remember my signature on this device</label>
+      </section>
+
+      <section class="card">
+        <h2>Place on the page</h2>
+        <div class="sg-tools" id="tools" role="group" aria-label="Add to the page">
+          <button class="btn" data-add="sig" aria-pressed="false">✍ Signature</button>
+          <button class="btn" data-add="ini" aria-pressed="false">Initials</button>
+          <button class="btn" data-add="date" aria-pressed="false">📅 Date</button>
+          <button class="btn" data-add="text" aria-pressed="false">T Text</button>
+        </div>
+        <label class="field mt">Date format<select class="select" id="dateFmt"></select></label>
+        <p class="faint sg-hint" id="hint">Pick one, then click on a page where it should go. Drag to move, pull the corner to resize, double-click text to edit.</p>
+        <div class="row">
+          <span class="chip" id="count">Nothing placed yet</span>
+          <span class="grow"></span>
+          <button class="btn ghost small" id="clearAll"><svg class="i"><use href="#i-trash"/></svg>Remove all</button>
+        </div>
+      </section>
+
+      <button class="btn primary big sg-save" id="save"><svg class="i"><use href="#i-download"/></svg>Sign &amp; download</button>
+      <p class="faint sg-note">This stamps a picture of your signature into the PDF, like signing on paper. It is not a certificate-based digital signature.</p>
+    </aside>
+  </div>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
